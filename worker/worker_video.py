@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 __author__ = 'Mohit Sharma'
 __version__ = 'Development'
 __license__ = 'MIT'
@@ -5,6 +7,7 @@ __license__ = 'MIT'
 from omxplayer import OMXPlayer
 import time
 import os
+import sys
 import psutil
 
 _DIR = os.path.join(os.path.expanduser('~'), 'Videos')
@@ -21,7 +24,7 @@ class Controller(object):
         self._files = []
         for files in os.listdir(_DIR):
             if files.endswith(('wmv', 'mp4', 'mov', 'avi')):
-               self._files.append(files)
+               self._files.append(os.path.join(_DIR, files))
             else:
                 pass
 
@@ -35,25 +38,40 @@ class Controller(object):
             self.current_file = self._files[self.idx]
             self.idx = (self.idx + 1) % len(self._files)
             self.next_file = self._files[self.idx]
+            # Play files one after the other
             self.player(self.current_file)
-            print 'player: ',self.player
-
+            
     def player(self, current_file):
-        print 'Playing:',current_file
-        #time.sleep(1)
+        print(current_file,'\n','\tPlaying')
+        # Set output window size
         self.omx = OMXPlayer(current_file, args=["--win", " 0,0,640,480"])
         self.omx.play()
-        print self.omx.playback_status()
         try:
+            self.omx.set_position(15.0)
             while True:
-                if not(self.omx.playback_status()):
-                    print current_file, 'stopped'
-                    break
-                else: 
-                    print self.omx.position()
-                    time.sleep(3)
+                try:
+                    if not(self.omx.playback_status()):
+                        # If file ended.. stop playback
+                        print('\n\tStopped\n')
+                        self.omx.stop()
+                        break
+                    
+                    else:
+                        # Print time elapsed
+                        print('\r\t','{0:.2f}'.format(self.omx.position()),
+                              '/', '{0:.2f}'.format(self.omx.duration())+
+                              ' seconds', end = ''),
+                        sys.stdout.flush()
+                    
+                except Exception, e:
+                    # dBUS exception for file that 
+                    # finished playing. Ignore!
+                    pass
+
         except KeyboardInterrupt, e:
-            print 'Stopping Playback..', e
+            # Catch Ctrl+C and stop playing
+            # current file
+            print('Stopping Playback..', e)
             self.omx.stop()
 
     def kill(self):
@@ -64,7 +82,7 @@ class Controller(object):
         for process in psutil.process_iter():
             # Kill omxplayer.bin
             if process.name() == _PROCNAME[0]:
-                print 'Killing child: ',process
+                print('Killing child: ',process)
                 process.terminate()
 
 
@@ -72,15 +90,3 @@ if __name__ == '__main__':
     c = Controller()
     c.check_new_files()
     c.play_files()
-    c.player(_dir+'/IRTL.mp4')
-
-'''
-omx = OMXPlayer('IRTL.mp4')
-omx.play()
-while True:
-    if (omx.playback_status() != 'Playing'):
-        break
-    else:
-        print omx.position()
-    time.sleep(2)
-'''
