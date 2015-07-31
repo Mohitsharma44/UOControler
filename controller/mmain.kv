@@ -1,0 +1,35 @@
+<VidButton@Button>:
+    size_hint: 0.2, 0.2
+
+<RootWidget>:
+#This is the root widget's kv definition
+#: import FadeTransition kivy.uix.screenmanager.FadeTransition
+    transition: FadeTransition()
+
+    Screen:
+        name: 'Server 1'
+        Label:
+            split_str: ''
+            text: 'Server 1'
+        StackLayout:
+            orientation: 'rl-tb'
+            VidButton:
+                on_release: root.release(self.text)
+                on_press: app.root.current='Server 2'
+            	background_color: 0.9098,0.6, 0.3764, 1
+                id: 'TestBtn2'
+                text: 'Server 2 ->'
+	
+		
+    Screen:
+        name: 'Server 2'
+        Label:
+            text: 'Server 2'
+        StackLayout:
+            orientation: 'rl-tb'
+            VidButton:
+                on_release: root.release(self.text)
+                on_press: app.root.current='Server 1'
+                background_color: 0.639, 0.7843, 0.509, 1
+                id: 'TestBtn2'
+                text: 'Server 1 ->'

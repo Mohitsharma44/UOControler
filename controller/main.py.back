@@ -1,0 +1,95 @@
+from __future__ import division, print_function
+from kivy.app import App
+from kivy.uix.stacklayout import StackLayout
+from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition, NoTransition
+from kivy.core.window import Window
+from kivy.uix.button import Button
+from kivy.uix.togglebutton import ToggleButton
+from kivy.uix.label import Label
+from itertools import cycle
+import time
+from kivy.utils import get_color_from_hex
+from kivy.clock import Clock
+
+class RootWidget(ScreenManager, Screen):
+    # Total number of screens:
+    SCREENS = 3
+    FILES = 5
+    # Set Control Button Properties Here:
+    _COLORS = [(232/255,153/255, 96/255, 1),(168/255, 159/255, 152/255, 1),
+               (112/255, 149/255, 194/255, 1),(163/255, 200/255, 130/255, 1)]
+    CTRL_BTN_COLORS = cycle(_COLORS[:SCREENS])
+    CTRL_BTN_HEIGHT = 0.10
+    CTRL_BTN_WIDTH = 'auto' # Pass float between 0 and 1
+    
+    def __init__(self, **kwargs):
+        super(RootWidget, self).__init__(**kwargs)
+        Window.clearcolor = get_color_from_hex('#616161')
+        self.transition = NoTransition()
+        for i in range(self.SCREENS):
+            screen = Screen(name='Screen %d'%i)
+            for cntrl_button in self._ctrlButtons():
+                screen.add_widget(cntrl_button)
+                #screen.add_widget(Label(text='Screen %d'%i))
+            for vid_button in self._vidButtons():
+                screen.add_widget(vid_button)
+            screen.add_widget(Label(id='status',
+                                    markup=True,
+                                    text='Status...',
+                                    halign='left',valign='bottom'))
+            self.add_widget(screen)
+        self.current = 'Screen 0'
+
+    def _ctrlButtons(self):
+        ctrlbuttons = []
+        for i in range(self.SCREENS):
+            ctrlbuttons.append(Button(id=str(i),
+                                  group='control',
+                                  text="Go to Screen %d"%i,
+                                  size_hint=(1/self.SCREENS if self.CTRL_BTN_WIDTH == 'auto' else self.CTRL_BTN_WIDTH,
+                                             self.CTRL_BTN_HEIGHT),
+                                  on_press=self._ctrlBtnPress,
+                                  on_release=self._ctrlBtnRelease,
+                                  background_color=self.CTRL_BTN_COLORS.next(),
+                                  pos_hint={'x': i/self.SCREENS, 'y': 1-self.CTRL_BTN_HEIGHT}
+            ))
+        return ctrlbuttons
+    
+    def _vidButtons(self):
+        vidbuttons = []
+        # Enumerate here.. ind, val
+        for i in range(self.FILES):
+            vidbuttons.append(ToggleButton(id=str(i),
+                                           group='video',
+                                           text='Vid %d'%i,# Replace by fname
+                                           size_hint=(1/self.FILES,
+                                                      self.CTRL_BTN_HEIGHT),
+                                           on_press=self._vidBtnPress,
+                                           on_release=self._vidBtnRelease,
+                                           #background_color=,
+                                           pos_hint={'x': i/self.FILES, 'y': 0.2-self.CTRL_BTN_HEIGHT},
+                                           padding=(0,0)
+            ))
+        return vidbuttons
+    
+    def _ctrlBtnPress(self, value):
+        self.current = 'Screen %d'%(int(value.id))
+        print(self.current)
+        print(self.ids)
+        #self.print_status()
+        
+    def _vidBtnPress(self, value):
+        pass
+        
+    def _ctrlBtnRelease(self, value):
+        pass
+
+    def _vidBtnRelease(self, value):
+        pass
+
+class MainApp(App):
+    def build(self):
+        return RootWidget()
+
+if __name__ == '__main__':
+    MainApp().run()
