@@ -1,17 +1,5 @@
 from __future__ import division, print_function
-from kivy.app import App
-from kivy.uix.stacklayout import StackLayout
-from kivy.uix.floatlayout import FloatLayout
-from kivy.uix.screenmanager import ScreenManager, Screen, FadeTransition, NoTransition
-from kivy.core.window import Window
-from kivy.uix.textinput import TextInput
-from kivy.uix.button import Button
-from kivy.uix.togglebutton import ToggleButton
-from kivy.uix.label import Label
-from itertools import cycle
-from kivy.uix.popup import Popup
-from kivy.utils import get_color_from_hex
-from kivy.clock import Clock
+from controller_imports import *
 
 class RootWidget(ScreenManager, Screen):
     # Total number of screens:
@@ -36,17 +24,23 @@ class RootWidget(ScreenManager, Screen):
         not go away.
         '''
         flayout = FloatLayout()
+        image = AsyncImage(source='./city_520.png',
+                           allow_stretch=True,
+                           #size=(100,50),
+                           #size_hint=(0,0.5),
+                           pos_hint={'x':0, 'y':-0.35})
         txtinput = TextInput(text='', multiline=False,
-                             password=True, size=(100,50),
-                             size_hint=(None,None),
-                             pos_hint={'center_x':0.5, 'center_y':0.5}
+                             password=True, size=(200,50),
+                             size_hint=(None, None),
+                             pos_hint={'center_x':0.5, 'center_y':0.7}
         )
         txtinput.bind(on_text_validate=self.on_enter)
         label = Label(text='Login to access Controller', size=(100, 50),
                       size_hint=(0,0.5),
-                      pos_hint={'center_x':0.5, 'center_y':0.6})
+                      pos_hint={'center_x':0.5, 'center_y':0.85})
         flayout.add_widget(txtinput)
         flayout.add_widget(label)
+        flayout.add_widget(image)
         self.popup = Popup(title='Login', content=flayout,
                            auto_dismiss=False)
         self.popup.open()
@@ -57,7 +51,7 @@ class RootWidget(ScreenManager, Screen):
         '''
         if value.text == 'Mohit':
             self.popup.dismiss()
-            Window.clearcolor = get_color_from_hex('#616161')
+            Window.clearcolor = get_color_from_hex('#212121')
             print('Starting Controller UI')
             self.controllerUI()
         
@@ -71,6 +65,16 @@ class RootWidget(ScreenManager, Screen):
                 for vid_button in self._vidButtons():
                     screen.add_widget(vid_button)
                 #screen.add_widget(Label(text='Screen %d'%i))
+                screen.add_widget(AsyncImage(id='TV1',
+                                             source='city.png',
+                                             size_hint=(0.48,1.2),
+                                             pos_hint={'x':0., 'y':0}
+                ))
+                screen.add_widget(AsyncImage(id='TV1',
+                                             source='city.png',
+                                             size_hint=(0.48,1.2),
+                                             pos_hint={'x':0.52, 'y':0}
+                ))
                 screen.add_widget(Label(id='status',
                                         markup=True,
                                         text='[b]Controller Ready.. [/b]',
@@ -79,15 +83,15 @@ class RootWidget(ScreenManager, Screen):
                                         pos_hint={'x':0.05, 'y':0}
                 ))
                 self.add_widget(screen)
-                #print(screen.id)
             self.current = 'Screen 0'
         except Exception, e:
+            print('Exception in Screen: ',e)
             pass
             
     def _ctrlButtons(self):
         ctrlbuttons = []
         for i in range(self.SCREENS):
-            ctrlbuttons.append(Button(id='Control %d'%i,
+            ctrlbuttons.append(ToggleButton(id='Control %d'%i,
                                       name = 'Control %d'%i,
                                       group='control',
                                       text='Go to Screen: %d'%i,
@@ -104,7 +108,7 @@ class RootWidget(ScreenManager, Screen):
         vidbuttons = []
         # Enumerate here.. ind, val
         for i in range(self.FILES):
-            vidbuttons.append(ToggleButton(id='Video %d'%i,
+            vidbuttons.append(Button(id='Video %d'%i,
                                            name='Video %d'%i,
                                            group='video',
                                            text='Vid %d'%i,# Replace by fname
@@ -131,7 +135,6 @@ class RootWidget(ScreenManager, Screen):
         for i in range(self.SCREENS+self.FILES):
             if self.get_screen(self.current).children[i].id[:-1] == 'Control ':
                 self.get_screen(self.current).children[i].bold = False
-
         # Turn on Bold for the selected button
         value.bold = True
         '''
